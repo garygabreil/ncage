@@ -1,0 +1,270 @@
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>
+      <i class="bi bi-calendar-check text-warning"></i> Attendance Tracking
+    </h2>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-body">
+      @if (isLoading()) {
+      <div class="text-center py-5">
+        <div class="spinner-border text-warning" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="text-muted mt-3">Loading attendance data...</p>
+      </div>
+      } @else {
+      <div class="row align-items-center">
+        <div class="col-md-4">
+          <label class="form-label fw-bold">Select Date</label>
+          <input
+            type="date"
+            class="form-control"
+            [(ngModel)]="selectedDate"
+            (ngModelChange)="selectedDate.set($event)"
+          />
+        </div>
+        <div class="col-md-8">
+          <div class="alert alert-info mb-0 mt-3 mt-md-0">
+            <i class="bi bi-info-circle"></i>
+            Showing attendance for <strong>{{ selectedDate() }}</strong>
+            <span class="ms-3">
+              {{ filteredRecords().length }} of {{ students().length }} marked
+            </span>
+          </div>
+        </div>
+      </div>
+      }
+    </div>
+  </div>
+
+  @if (!isLoading()) {
+  <div class="card">
+    <div class="card-header bg-white">
+      <div class="row align-items-center">
+        <div class="col-md-4">
+          <h6 class="mb-0">Student Attendance</h6>
+        </div>
+        <div class="col-md-5">
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input
+              type="text"
+              class="form-control"
+              placeholder="Search students..."
+              [value]="searchTerm()"
+              (input)="onSearchChange($any($event.target).value)"
+            />
+          </div>
+        </div>
+        <div class="col-md-3">
+          <select
+            class="form-select"
+            [value]="itemsPerPage()"
+            (change)="
+              itemsPerPage.set(+$any($event.target).value);
+              onItemsPerPageChange()
+            "
+          >
+            <option [value]="5">5 per page</option>
+            <option [value]="10">10 per page</option>
+            <option [value]="20">20 per page</option>
+            <option [value]="50">50 per page</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>Student Name</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (student of paginatedStudents(); track student.id) {
+            <tr>
+              <td class="align-middle">
+                <i class="bi bi-person-circle me-2"></i>
+                {{ student.name }}
+              </td>
+              <td class="align-middle">
+                @if (getAttendanceStatus(student.id ?? ''); as status) {
+                <span
+                  class="badge bg-{{ getStatusClass(status) }} text-capitalize"
+                >
+                  <i
+                    class="bi bi-{{
+                      status === 'present'
+                        ? 'check-circle'
+                        : status === 'absent'
+                        ? 'x-circle'
+                        : 'clock'
+                    }}"
+                  ></i>
+                  {{ status }}
+                </span>
+                } @else {
+                <span class="badge bg-secondary">
+                  <i class="bi bi-dash-circle"></i> Not Marked
+                </span>
+                }
+              </td>
+              <td>
+                <div class="btn-group" role="group">
+                  <button
+                    type="button"
+                    class="btn btn-sm"
+                    [class.btn-warning]="
+                      getAttendanceStatus(student.id ?? '') === 'present'
+                    "
+                    [class.btn-outline-warning]="
+                      getAttendanceStatus(student.id ?? '') !== 'present'
+                    "
+                    (click)="
+                      markAttendance(student.id ?? '', student.name, 'present')
+                    "
+                  >
+                    <i class="bi bi-check-lg"></i> Present
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-sm"
+                    [class.btn-warning]="
+                      getAttendanceStatus(student.id ?? '') === 'late'
+                    "
+                    [class.btn-outline-warning]="
+                      getAttendanceStatus(student.id ?? '') !== 'late'
+                    "
+                    (click)="
+                      markAttendance(student.id ?? '', student.name, 'late')
+                    "
+                  >
+                    <i class="bi bi-clock"></i> Late
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-sm"
+                    [class.btn-danger]="
+                      getAttendanceStatus(student.id ?? '') === 'absent'
+                    "
+                    [class.btn-outline-danger]="
+                      getAttendanceStatus(student.id ?? '') !== 'absent'
+                    "
+                    (click)="
+                      markAttendance(student.id ?? '', student.name, 'absent')
+                    "
+                  >
+                    <i class="bi bi-x-lg"></i> Absent
+                  </button>
+                </div>
+              </td>
+            </tr>
+            } @empty {
+            <tr>
+              <td colspan="3" class="text-center text-muted">
+                No students available. Add students first!
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <div class="d-flex justify-content-between align-items-center mt-3">
+        <div class="text-muted">
+          Showing
+          {{
+            filteredStudents().length === 0
+              ? 0
+              : (currentPage() - 1) * itemsPerPage() + 1
+          }}
+          to
+          {{
+            Math.min(currentPage() * itemsPerPage(), filteredStudents().length)
+          }}
+          of {{ filteredStudents().length }} students
+        </div>
+        <nav aria-label="Attendance pagination">
+          <ul class="pagination mb-0">
+            <li class="page-item" [class.disabled]="currentPage() === 1">
+              <a
+                class="page-link"
+                href="javascript:void(0)"
+                (click)="goToPage(currentPage() - 1)"
+              >
+                <i class="bi bi-chevron-left"></i>
+              </a>
+            </li>
+            @for (page of [].constructor(totalPages()); track $index) {
+            <li class="page-item" [class.active]="currentPage() === $index + 1">
+              <a
+                class="page-link"
+                href="javascript:void(0)"
+                (click)="goToPage($index + 1)"
+              >
+                {{ $index + 1 }}
+              </a>
+            </li>
+            }
+            <li
+              class="page-item"
+              [class.disabled]="currentPage() === totalPages()"
+            >
+              <a
+                class="page-link"
+                href="javascript:void(0)"
+                (click)="goToPage(currentPage() + 1)"
+              >
+                <i class="bi bi-chevron-right"></i>
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </div>
+  } @if (!isLoading()) {
+  <div class="row mt-4">
+    <div class="col-md-4">
+      <div class="card text-center border-warning">
+        <div class="card-body">
+          <h3 class="text-warning">
+            {{ presentCount() }}
+          </h3>
+          <p class="mb-0">Present</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card text-center border-warning">
+        <div class="card-body">
+          <h3 class="text-warning">
+            {{ lateCount() }}
+          </h3>
+          <p class="mb-0">Late</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card text-center border-danger">
+        <div class="card-body">
+          <h3 class="text-danger">
+            {{ absentCount() }}
+          </h3>
+          <p class="mb-0">Absent</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  }
+
+  <div class="mt-3">
+    <a routerLink="/dashboard" class="btn btn-outline-secondary">
+      <i class="bi bi-arrow-left"></i> Back to Dashboard
+    </a>
+  </div>
+</div>

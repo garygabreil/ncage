@@ -1,0 +1,623 @@
+<div class="container-fluid px-4 py-4">
+  <!-- Header Section -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div
+        class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3"
+      >
+        <div>
+          <h2 class="mb-1">
+            <i
+              class="bi bi-clock-history me-2"
+              style="color: var(--ncage-orange)"
+            ></i>
+            Turf Billing & Bookings
+          </h2>
+          <p class="text-muted mb-0">
+            Manage time-based turf bookings and billing
+          </p>
+        </div>
+        <button
+          class="btn btn-warning btn-lg shadow-sm text-dark"
+          (click)="openAddModal()"
+        >
+          <i class="bi bi-plus-circle me-2"></i>New Booking
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="row mb-4 g-3">
+    <div class="col-lg-3 col-md-6">
+      <div
+        class="card border-0 shadow-sm h-100 border-start border-success border-4"
+      >
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="flex-shrink-0">
+              <div class="bg-success bg-opacity-10 rounded-3 p-3">
+                <i class="bi bi-cash-stack fs-2 text-success"></i>
+              </div>
+            </div>
+            <div class="flex-grow-1 ms-3">
+              <h6 class="text-muted mb-1">Total Revenue</h6>
+              <h3 class="mb-0 text-success">₹{{ getTotalRevenue() }}</h3>
+              <small class="text-muted">Paid bookings</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+      <div
+        class="card border-0 shadow-sm h-100 border-start border-warning border-4"
+      >
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="flex-shrink-0">
+              <div class="bg-warning bg-opacity-10 rounded-3 p-3">
+                <i class="bi bi-hourglass-split fs-2 text-warning"></i>
+              </div>
+            </div>
+            <div class="flex-grow-1 ms-3">
+              <h6 class="text-muted mb-1">Pending</h6>
+              <h3 class="mb-0 text-warning">₹{{ getPendingAmount() }}</h3>
+              <small class="text-muted">Awaiting payment</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+      <div
+        class="card border-0 shadow-sm h-100 border-start border-primary border-4"
+      >
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="flex-shrink-0">
+              <div class="bg-warning bg-opacity-10 rounded-3 p-3">
+                <i class="bi bi-calendar-check fs-2 text-warning"></i>
+              </div>
+            </div>
+            <div class="flex-grow-1 ms-3">
+              <h6 class="text-muted mb-1">Total Bookings</h6>
+              <h3 class="mb-0 text-warning">{{ bookings().length }}</h3>
+              <small class="text-muted">All time</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+      <div
+        class="card border-0 shadow-sm h-100 border-start border-info border-4"
+      >
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="flex-shrink-0">
+              <div class="bg-info bg-opacity-10 rounded-3 p-3">
+                <i class="bi bi-clock fs-2 text-info"></i>
+              </div>
+            </div>
+            <div class="flex-grow-1 ms-3">
+              <h6 class="text-muted mb-1">Total Hours</h6>
+              <h3 class="mb-0 text-info">{{ getTotalHours() }}</h3>
+              <small class="text-muted">Booked hours</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bookings Table -->
+  <div class="card border-0 shadow-sm">
+    <div class="card-header bg-white py-3">
+      <div class="row align-items-center">
+        <div class="col-md-4">
+          <h5 class="mb-0"><i class="bi bi-table me-2"></i>All Bookings</h5>
+        </div>
+        <div class="col-md-5">
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input
+              type="text"
+              class="form-control"
+              placeholder="Search bookings..."
+              [value]="searchTerm()"
+              (input)="onSearchChange($any($event.target).value)"
+            />
+          </div>
+        </div>
+        <div class="col-md-3">
+          <select
+            class="form-select"
+            [value]="itemsPerPage()"
+            (change)="
+              itemsPerPage.set(+$any($event.target).value);
+              onItemsPerPageChange()
+            "
+          >
+            <option [value]="5">5 per page</option>
+            <option [value]="10">10 per page</option>
+            <option [value]="20">20 per page</option>
+            <option [value]="50">50 per page</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="card-body p-0">
+      @if (isLoading()) {
+      <div class="text-center py-5">
+        <div class="spinner-border text-warning" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="text-muted mt-3">Loading bookings...</p>
+      </div>
+      } @else {
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead class="table-light">
+            <tr>
+              <th class="border-0 ps-4">
+                <i class="bi bi-person me-1"></i>Student
+              </th>
+              <th class="border-0">
+                <i class="bi bi-calendar-date me-1"></i>Date
+              </th>
+              <th class="border-0">
+                <i class="bi bi-clock me-1"></i>Time Slot
+              </th>
+              <th class="border-0 text-center">
+                <i class="bi bi-hourglass me-1"></i>Hours
+              </th>
+              <th class="border-0 text-end">
+                <i class="bi bi-tag me-1"></i>Rate/Hr
+              </th>
+              <th class="border-0 text-end">
+                <i class="bi bi-currency-dollar me-1"></i>Total
+              </th>
+              <th class="border-0 text-center">Status</th>
+              <th class="border-0 text-end pe-4">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (booking of paginatedBookings(); track booking.id) {
+            <tr>
+              <td class="ps-4">
+                <div class="d-flex align-items-center">
+                  <div class="bg-warning bg-opacity-10 rounded-circle p-2 me-2">
+                    <i class="bi bi-person-fill text-warning"></i>
+                  </div>
+                  <span class="fw-medium">{{ booking.studentName }}</span>
+                </div>
+              </td>
+              <td>
+                <span class="badge bg-light text-dark border">
+                  <i class="bi bi-calendar3 me-1"></i>{{ booking.date }}
+                </span>
+              </td>
+              <td>
+                <span class="text-muted">
+                  <i class="bi bi-clock-fill me-1"></i>
+                  {{ booking.startTime }} - {{ booking.endTime }}
+                </span>
+              </td>
+              <td class="text-center">
+                <span class="badge bg-info text-white"
+                  >{{ booking.hours }}h</span
+                >
+              </td>
+              <td class="text-end">
+                <span class="text-muted"
+                  >₹{{ booking.ratePerHour.toFixed(2) }}</span
+                >
+              </td>
+              <td class="text-end">
+                <strong class="text-success"
+                  >₹{{ booking.totalAmount.toFixed(2) }}</strong
+                >
+              </td>
+              <td class="text-center">
+                <span
+                  class="badge bg-{{
+                    getStatusClass(booking.status)
+                  }} text-capitalize px-3"
+                >
+                  <i
+                    class="bi bi-{{
+                      booking.status === 'paid'
+                        ? 'check-circle'
+                        : booking.status === 'pending'
+                        ? 'clock'
+                        : 'x-circle'
+                    }} me-1"
+                  ></i>
+                  {{ booking.status }}
+                </span>
+              </td>
+              <td class="text-end pe-4">
+                <div class="btn-group" role="group">
+                  @if (booking.status === 'pending') {
+                  <button
+                    class="btn btn-sm btn-success"
+                    (click)="booking.id && updateStatus(booking.id, 'paid')"
+                    title="Mark as Paid"
+                  >
+                    <i class="bi bi-check-circle-fill"></i>
+                  </button>
+                  } @if (booking.status === 'paid') {
+                  <button
+                    class="btn btn-sm btn-info"
+                    (click)="generateInvoice(booking)"
+                    title="Generate Invoice"
+                  >
+                    <i class="bi bi-receipt"></i>
+                  </button>
+                  }
+                  <button
+                    class="btn btn-sm btn-outline-primary"
+                    (click)="openEditModal(booking)"
+                    title="Edit Booking"
+                  >
+                    <i class="bi bi-pencil-square"></i>
+                  </button>
+                  <button
+                    class="btn btn-sm btn-outline-danger"
+                    (click)="booking.id && deleteBooking(booking.id)"
+                    title="Delete Booking"
+                  >
+                    <i class="bi bi-trash-fill"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            } @empty {
+            <tr>
+              <td colspan="8" class="text-center py-5">
+                <div class="text-muted">
+                  <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                  <h5>No bookings yet</h5>
+                  <p>Create your first booking to get started!</p>
+                </div>
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <div class="card-footer bg-white border-0">
+        <div class="d-flex justify-content-between align-items-center">
+          <div class="text-muted">
+            Showing
+            {{
+              filteredBookings().length === 0
+                ? 0
+                : (currentPage() - 1) * itemsPerPage() + 1
+            }}
+            to
+            {{
+              Math.min(
+                currentPage() * itemsPerPage(),
+                filteredBookings().length
+              )
+            }}
+            of {{ filteredBookings().length }} bookings
+          </div>
+          <nav aria-label="Billing pagination">
+            <ul class="pagination mb-0">
+              <li class="page-item" [class.disabled]="currentPage() === 1">
+                <a
+                  class="page-link"
+                  href="javascript:void(0)"
+                  (click)="goToPage(currentPage() - 1)"
+                >
+                  <i class="bi bi-chevron-left"></i>
+                </a>
+              </li>
+              @for (page of [].constructor(totalPages()); track $index) {
+              <li
+                class="page-item"
+                [class.active]="currentPage() === $index + 1"
+              >
+                <a
+                  class="page-link"
+                  href="javascript:void(0)"
+                  (click)="goToPage($index + 1)"
+                >
+                  {{ $index + 1 }}
+                </a>
+              </li>
+              }
+              <li
+                class="page-item"
+                [class.disabled]="currentPage() === totalPages()"
+              >
+                <a
+                  class="page-link"
+                  href="javascript:void(0)"
+                  (click)="goToPage(currentPage() + 1)"
+                >
+                  <i class="bi bi-chevron-right"></i>
+                </a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+      }
+    </div>
+  </div>
+
+  <!-- Add/Edit Booking Modal -->
+  @if (showModal()) {
+  <div
+    class="modal d-block"
+    tabindex="-1"
+    style="background-color: rgba(0, 0, 0, 0.5)"
+  >
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header bg-warning text-dark">
+          <h5 class="modal-title">
+            <i
+              class="bi bi-{{
+                isEditing() ? 'pencil-square' : 'plus-circle'
+              }} me-2"
+            ></i>
+            {{ isEditing() ? "Edit Booking" : "New Booking" }}
+          </h5>
+          <button
+            type="button"
+            class="btn-close"
+            (click)="closeModal()"
+          ></button>
+        </div>
+        <div class="modal-body p-4">
+          <form #bookingForm="ngForm">
+            <div class="row g-3">
+              <div class="col-12">
+                <label class="form-label fw-semibold">
+                  <i class="bi bi-person me-1"></i>Customer Name
+                  <span class="text-danger">*</span>
+                </label>
+                <div class="position-relative">
+                  <input
+                    type="text"
+                    class="form-control form-control-lg"
+                    [ngModel]="customerNameInput()"
+                    (ngModelChange)="updateCustomerName($event)"
+                    (focus)="
+                      showSuggestions.set(customerNameInput().length > 0)
+                    "
+                    name="customerName"
+                    #customerInput="ngModel"
+                    required
+                    placeholder="Type customer or student name..."
+                    autocomplete="off"
+                    [class.is-invalid]="
+                      customerInput.invalid && customerInput.touched
+                    "
+                    [class.is-valid]="
+                      customerInput.valid && customerInput.touched
+                    "
+                  />
+                  @if (customerInput.invalid && customerInput.touched) {
+                  <div class="invalid-feedback">
+                    <i class="bi bi-exclamation-circle me-1"></i>Customer name
+                    is required
+                  </div>
+                  }
+
+                  <!-- Autocomplete Suggestions -->
+                  @if (showSuggestions() && filteredStudents().length > 0) {
+                  <div
+                    class="position-absolute w-100 bg-white border rounded shadow-sm mt-1"
+                    style="z-index: 1000; max-height: 200px; overflow-y: auto"
+                  >
+                    @for (student of filteredStudents(); track student.id) {
+                    <div
+                      class="p-2 border-bottom"
+                      (click)="selectStudent(student)"
+                      style="cursor: pointer; transition: background-color 0.2s"
+                      (mouseenter)="
+                        $any($event.target).style.backgroundColor = '#f8f9fa'
+                      "
+                      (mouseleave)="
+                        $any($event.target).style.backgroundColor = 'white'
+                      "
+                    >
+                      <i class="bi bi-person-fill text-warning me-2"></i>
+                      <strong>{{ student.name }}</strong>
+                      <small class="text-muted ms-2">{{ student.batch }}</small>
+                    </div>
+                    }
+                  </div>
+                  }
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">
+                  <i class="bi bi-calendar-event me-1"></i>Booking Date
+                  <span class="text-danger">*</span>
+                </label>
+                <input
+                  type="date"
+                  class="form-control form-control-lg"
+                  [(ngModel)]="currentBooking().date"
+                  (ngModelChange)="updateDate($event)"
+                  name="date"
+                  #dateInput="ngModel"
+                  required
+                  [class.is-invalid]="dateInput.invalid && dateInput.touched"
+                  [class.is-valid]="dateInput.valid && dateInput.touched"
+                />
+                @if (dateInput.invalid && dateInput.touched) {
+                <div class="invalid-feedback">
+                  <i class="bi bi-exclamation-circle me-1"></i>Date is required
+                </div>
+                }
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">
+                  <i class="bi bi-tag me-1"></i>Rate per Hour ($)
+                  <span class="text-danger">*</span>
+                </label>
+                <input
+                  type="number"
+                  class="form-control form-control-lg"
+                  [(ngModel)]="currentBooking().ratePerHour"
+                  (ngModelChange)="updateRatePerHour(+$event)"
+                  name="ratePerHour"
+                  #rateInput="ngModel"
+                  required
+                  min="1"
+                  placeholder="50"
+                  [class.is-invalid]="rateInput.invalid && rateInput.touched"
+                  [class.is-valid]="rateInput.valid && rateInput.touched"
+                />
+                @if (rateInput.invalid && rateInput.touched) {
+                <div class="invalid-feedback">
+                  <i class="bi bi-exclamation-circle me-1"></i>Enter a valid
+                  rate
+                </div>
+                }
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">
+                  <i class="bi bi-clock me-1"></i>Start Time
+                  <span class="text-danger">*</span>
+                </label>
+                <input
+                  type="time"
+                  class="form-control form-control-lg"
+                  [(ngModel)]="currentBooking().startTime"
+                  (ngModelChange)="updateStartTime($event)"
+                  name="startTime"
+                  #startInput="ngModel"
+                  required
+                  [class.is-invalid]="startInput.invalid && startInput.touched"
+                  [class.is-valid]="startInput.valid && startInput.touched"
+                />
+                @if (startInput.invalid && startInput.touched) {
+                <div class="invalid-feedback">
+                  <i class="bi bi-exclamation-circle me-1"></i>Start time is
+                  required
+                </div>
+                }
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">
+                  <i class="bi bi-clock-fill me-1"></i>End Time
+                  <span class="text-danger">*</span>
+                </label>
+                <input
+                  type="time"
+                  class="form-control form-control-lg"
+                  [(ngModel)]="currentBooking().endTime"
+                  (ngModelChange)="updateEndTime($event)"
+                  name="endTime"
+                  #endInput="ngModel"
+                  required
+                  [class.is-invalid]="endInput.invalid && endInput.touched"
+                  [class.is-valid]="endInput.valid && endInput.touched"
+                />
+                @if (endInput.invalid && endInput.touched) {
+                <div class="invalid-feedback">
+                  <i class="bi bi-exclamation-circle me-1"></i>End time is
+                  required
+                </div>
+                }
+              </div>
+
+              <!-- Calculation Summary -->
+              @if (calculatedHours() > 0) {
+              <div class="col-12">
+                <div class="card bg-light border-0">
+                  <div class="card-body">
+                    <h6 class="mb-3">
+                      <i class="bi bi-calculator me-2"></i>Booking Summary
+                    </h6>
+                    <div class="row g-2">
+                      <div class="col-md-4">
+                        <div class="d-flex align-items-center">
+                          <i class="bi bi-hourglass text-info me-2"></i>
+                          <div>
+                            <small class="text-muted d-block">Duration</small>
+                            <strong
+                              >{{ calculatedHours().toFixed(2) }} hours</strong
+                            >
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-4">
+                        <div class="d-flex align-items-center">
+                          <i class="bi bi-tag text-warning me-2"></i>
+                          <div>
+                            <small class="text-muted d-block">Rate/Hour</small>
+                            <strong>₹{{ currentBooking().ratePerHour }}</strong>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-4">
+                        <div class="d-flex align-items-center">
+                          <i
+                            class="bi bi-currency-dollar text-success me-2"
+                          ></i>
+                          <div>
+                            <small class="text-muted d-block"
+                              >Total Amount</small
+                            >
+                            <strong class="text-success fs-5"
+                              >₹{{ calculatedTotal().toFixed(2) }}</strong
+                            >
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              }
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer bg-light">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="closeModal()"
+          >
+            <i class="bi bi-x-circle me-1"></i>Cancel
+          </button>
+          <button
+            type="button"
+            class="btn btn-warning text-dark"
+            (click)="saveBooking()"
+            [disabled]="bookingForm.invalid || calculatedHours() <= 0"
+          >
+            <i
+              class="bi bi-{{
+                isEditing() ? 'check-circle' : 'plus-circle'
+              }} me-1"
+            ></i>
+            {{ isEditing() ? "Update" : "Create" }} Booking
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- Back Button -->
+  <div class="mt-4">
+    <a routerLink="/dashboard" class="btn btn-outline-secondary">
+      <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+    </a>
+  </div>
+</div>

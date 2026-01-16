@@ -1,0 +1,286 @@
+<div class="container mt-4 no-print">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>
+      <i class="bi bi-file-earmark-text text-info"></i> Invoice Management
+    </h2>
+  </div>
+
+  <div class="row mb-4">
+    <div class="col-md-4">
+      <div class="card border-success">
+        <div class="card-body text-center">
+          <h6 class="text-success">Total Paid</h6>
+          <h3>₹{{ getTotalPaid().toFixed(2) }}</h3>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card border-warning">
+        <div class="card-body text-center">
+          <h6 class="text-warning">Pending</h6>
+          <h3>₹{{ getTotalPending().toFixed(2) }}</h3>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card border-danger">
+        <div class="card-body text-center">
+          <h6 class="text-danger">Overdue</h6>
+          <h3>₹{{ getTotalOverdue().toFixed(2) }}</h3>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      @if (isLoading()) {
+      <div class="text-center py-5">
+        <div class="spinner-border text-warning" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="text-muted mt-3">Loading invoices...</p>
+      </div>
+      } @else {
+      <div class="row mb-3">
+        <div class="col-md-8">
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input
+              type="text"
+              class="form-control"
+              placeholder="Search by invoice number or student name..."
+              [value]="searchTerm()"
+              (input)="onSearchChange($any($event.target).value)"
+            />
+          </div>
+        </div>
+        <div class="col-md-4">
+          <select
+            class="form-select"
+            [(ngModel)]="itemsPerPage"
+            (ngModelChange)="itemsPerPage.set(+$event); onItemsPerPageChange()"
+          >
+            <option [value]="5">5 per page</option>
+            <option [value]="10">10 per page</option>
+            <option [value]="20">20 per page</option>
+            <option [value]="50">50 per page</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>Invoice #</th>
+              <th>Student</th>
+              <th>Date</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (invoice of paginatedInvoices(); track invoice.id) {
+            <tr>
+              <td class="fw-bold">{{ invoice.invoiceNumber }}</td>
+              <td>{{ invoice.studentName }}</td>
+              <td>{{ invoice.date }}</td>
+              <td class="fw-bold">₹{{ invoice.amount.toFixed(2) }}</td>
+              <td>
+                <span
+                  class="badge bg-{{
+                    getStatusClass(invoice.status)
+                  }} text-capitalize"
+                >
+                  {{ invoice.status }}
+                </span>
+              </td>
+              <td class="text-end">
+                <button
+                  class="btn btn-sm btn-outline-info"
+                  (click)="viewInvoice(invoice)"
+                >
+                  <i class="bi bi-eye"></i> View
+                </button>
+              </td>
+            </tr>
+            } @empty {
+            <tr>
+              <td colspan="6" class="text-center text-muted">
+                No invoices found
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="d-flex justify-content-between align-items-center mt-3">
+        <div class="text-muted">
+          Showing
+          {{
+            filteredInvoices().length === 0
+              ? 0
+              : (currentPage() - 1) * itemsPerPage() + 1
+          }}
+          to
+          {{
+            Math.min(currentPage() * itemsPerPage(), filteredInvoices().length)
+          }}
+          of {{ filteredInvoices().length }} invoices
+        </div>
+        <nav aria-label="Invoice pagination">
+          <ul class="pagination mb-0">
+            <li class="page-item" [class.disabled]="currentPage() === 1">
+              <a
+                class="page-link"
+                href="javascript:void(0)"
+                (click)="goToPage(currentPage() - 1)"
+              >
+                <i class="bi bi-chevron-left"></i>
+              </a>
+            </li>
+            @for (page of [].constructor(totalPages()); track $index) {
+            <li class="page-item" [class.active]="currentPage() === $index + 1">
+              <a
+                class="page-link"
+                href="javascript:void(0)"
+                (click)="goToPage($index + 1)"
+              >
+                {{ $index + 1 }}
+              </a>
+            </li>
+            }
+            <li
+              class="page-item"
+              [class.disabled]="currentPage() === totalPages()"
+            >
+              <a
+                class="page-link"
+                href="javascript:void(0)"
+                (click)="goToPage(currentPage() + 1)"
+              >
+                <i class="bi bi-chevron-right"></i>
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+      }
+    </div>
+  </div>
+
+  <!-- Invoice Print Modal -->
+  @if (showPrintModal() && selectedInvoice()) {
+  <div
+    class="modal d-block"
+    tabindex="-1"
+    style="background-color: rgba(0, 0, 0, 0.5)"
+  >
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header no-print">
+          <h5 class="modal-title">Invoice Details</h5>
+          <button
+            type="button"
+            class="btn-close"
+            (click)="closeModal()"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <div id="invoice-print">
+            <div class="text-center mb-4">
+              <app-logo></app-logo>
+              <h4 class="mt-2">Turf Management System</h4>
+            </div>
+
+            <div class="row mb-4">
+              <div class="col-6">
+                <h5>Invoice Details</h5>
+                <p class="mb-1">
+                  <strong>Invoice #:</strong>
+                  {{ selectedInvoice()!.invoiceNumber }}
+                </p>
+                <p class="mb-1">
+                  <strong>Date:</strong> {{ selectedInvoice()!.date }}
+                </p>
+                <p class="mb-1">
+                  <strong>Status:</strong>
+                  <span
+                    class="badge bg-{{
+                      getStatusClass(selectedInvoice()!.status)
+                    }}"
+                  >
+                    {{ selectedInvoice()!.status }}
+                  </span>
+                </p>
+              </div>
+              <div class="col-6 text-end">
+                <h5>Bill To</h5>
+                <p class="mb-1">
+                  <strong>{{ selectedInvoice()!.studentName }}</strong>
+                </p>
+              </div>
+            </div>
+
+            <table class="table table-bordered">
+              <thead class="table-light">
+                <tr>
+                  <th>Description</th>
+                  <th class="text-center">Hours</th>
+                  <th class="text-end">Rate</th>
+                  <th class="text-end">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (item of selectedInvoice()!.items; track $index) {
+                <tr>
+                  <td>{{ item.description }}</td>
+                  <td class="text-center">{{ item.hours.toFixed(2) }}</td>
+                  <td class="text-end">₹{{ item.rate.toFixed(2) }}</td>
+                  <td class="text-end">
+                    ₹{{ (item.hours * item.rate).toFixed(2) }}
+                  </td>
+                </tr>
+                }
+                <tr class="table-light">
+                  <td colspan="3" class="text-end">
+                    <strong>Total Amount:</strong>
+                  </td>
+                  <td class="text-end">
+                    <strong>₹{{ selectedInvoice()!.amount.toFixed(2) }}</strong>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div class="mt-4">
+              <p class="text-muted small">Thank you for your business!</p>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer no-print">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="closeModal()"
+          >
+            Close
+          </button>
+          <button type="button" class="btn btn-info" (click)="printInvoice()">
+            <i class="bi bi-printer"></i> Print Invoice
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  }
+
+  <div class="mt-3">
+    <a routerLink="/dashboard" class="btn btn-outline-secondary">
+      <i class="bi bi-arrow-left"></i> Back to Dashboard
+    </a>
+  </div>
+</div>

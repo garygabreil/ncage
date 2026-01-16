@@ -1,0 +1,142 @@
+/* You can add global styles to this file, and also import other style files */
+
+/* Global Font Weight */
+body {
+  font-weight: 300;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 400;
+}
+
+.fw-bold,
+.fw-semibold {
+  font-weight: 500 !important;
+}
+
+/* NCAGE Branding Colors */
+:root {
+  --ncage-black: #000;
+  --ncage-orange: #fd7e14; /* Bootstrap warning color */
+}
+
+/* Enhanced Card Hover Effects */
+.card-hover {
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.card-hover:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Table Enhancements */
+.table-hover tbody tr {
+  transition: all 0.2s ease;
+}
+
+.table-hover tbody tr:hover {
+  background-color: rgba(0, 123, 255, 0.05);
+  transform: scale(1.01);
+}
+
+/* Button Enhancements */
+.btn {
+  transition: all 0.2s ease;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Form Control Enhancements */
+.form-control:focus,
+.form-select:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+}
+
+/* Badge Enhancements */
+.badge {
+  font-weight: 500;
+  padding: 0.5em 0.75em;
+}
+
+/* Modal Enhancements */
+.modal {
+  backdrop-filter: blur(5px);
+}
+
+.modal-content {
+  border-radius: 0.75rem;
+}
+
+/* Responsive Table */
+@media (max-width: 768px) {
+  .table-responsive {
+    font-size: 0.875rem;
+  }
+
+  .btn-sm {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+  }
+}
+
+/* Icon Alignment */
+.bi {
+  vertical-align: middle;
+}
+
+/* Card Stats */
+.card .fs-1 {
+  font-size: 2.5rem !important;
+}
+
+.card .fs-2 {
+  font-size: 2rem !important;
+}
+
+/* Shadow Variants */
+.shadow-sm {
+  box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.075) !important;
+}
+
+/* Smooth Scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Loading States */
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Custom Border Colors */
+.border-start {
+  border-left-width: 4px !important;
+}
+
+/* Global print styles for invoices */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  @page {
+    margin: 1cm;
+  }
+
+  body {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}
