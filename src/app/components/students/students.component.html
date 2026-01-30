@@ -1,16 +1,16 @@
 <div class="container-fluid px-4 py-4">
   <!-- Loading Progress Bar -->
   @if (isLoading()) {
-  <div class="progress mb-3" style="height: 4px">
-    <div
-      class="progress-bar bg-warning progress-bar-striped progress-bar-animated"
-      role="progressbar"
-      [style.width.%]="loadingProgress()"
-      [attr.aria-valuenow]="loadingProgress()"
-      aria-valuemin="0"
-      aria-valuemax="100"
-    ></div>
-  </div>
+    <div class="progress mb-3" style="height: 4px">
+      <div
+        class="progress-bar bg-warning progress-bar-striped progress-bar-animated"
+        role="progressbar"
+        [style.width.%]="loadingProgress()"
+        [attr.aria-valuenow]="loadingProgress()"
+        aria-valuemin="0"
+        aria-valuemax="100"
+      ></div>
+    </div>
   }
 
   <!-- Header Section -->
@@ -132,356 +132,439 @@
     <div class="card-body p-0">
       <!-- Loading Spinner -->
       @if (isLoading()) {
-      <div class="text-center py-5">
-        <div class="spinner-border text-warning" role="status">
-          <span class="visually-hidden">Loading...</span>
-        </div>
-        <p class="text-muted mt-3">Loading students...</p>
-      </div>
-      } @else {
-      <div class="table-responsive">
-        <table class="table table-hover mb-0">
-          <thead class="table-light">
-            <tr>
-              <th class="border-0 ps-4">
-                <i class="bi bi-person me-1"></i>Name
-              </th>
-              <th class="border-0">
-                <i class="bi bi-geo-alt me-1"></i>Address
-              </th>
-              <th class="border-0">
-                <i class="bi bi-telephone me-1"></i>Phone
-              </th>
-              <th class="border-0">
-                <i class="bi bi-bookmark-star me-1"></i>Batch
-              </th>
-              <th class="border-0">
-                <i class="bi bi-calendar-event me-1"></i>Registration Date
-              </th>
-              <th class="border-0 text-end pe-4">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (student of paginatedStudents(); track student.id) {
-            <tr>
-              <td class="ps-4">
-                <div class="d-flex align-items-center">
-                  <div class="bg-warning bg-opacity-10 rounded-circle p-2 me-2">
-                    <i class="bi bi-person-fill text-warning"></i>
-                  </div>
-                  <span class="fw-medium">{{ student.name }}</span>
-                </div>
-              </td>
-              <td>
-                <span class="text-muted">
-                  <i class="bi bi-geo-alt-fill me-1"></i>{{ student.address }}
-                </span>
-              </td>
-              <td>
-                <span class="badge bg-light text-dark border">
-                  <i class="bi bi-phone me-1"></i>{{ student.phone }}
-                </span>
-              </td>
-              <td>
-                <span class="badge bg-warning text-dark">
-                  <i class="bi bi-bookmark-star-fill me-1"></i
-                  >{{ student.batch }}
-                </span>
-              </td>
-              <td>
-                <span class="text-muted">
-                  <i class="bi bi-calendar3 me-1"></i
-                  >{{ student.registrationDate }}
-                </span>
-              </td>
-              <td class="text-end pe-4">
-                <div class="btn-group" role="group">
-                  <button
-                    class="btn btn-sm btn-outline-primary"
-                    (click)="openEditModal(student)"
-                    title="Edit Student"
-                  >
-                    <i class="bi bi-pencil-square"></i>
-                  </button>
-                  <button
-                    class="btn btn-sm btn-outline-danger"
-                    (click)="student.id && deleteStudent(student.id)"
-                    title="Delete Student"
-                  >
-                    <i class="bi bi-trash-fill"></i>
-                  </button>
-                </div>
-              </td>
-            </tr>
-            } @empty {
-            <tr>
-              <td colspan="6" class="text-center py-5">
-                <div class="text-muted">
-                  <i class="bi bi-inbox fs-1 d-block mb-3"></i>
-                  <h5>No students found</h5>
-                  <p>Add your first student to get started!</p>
-                </div>
-              </td>
-            </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Pagination -->
-      @if (filteredStudents().length > 0) {
-      <div class="card-footer bg-white">
-        <div class="d-flex justify-content-between align-items-center">
-          <div class="text-muted">
-            Showing {{ (currentPage() - 1) * itemsPerPage() + 1 }} to
-            {{
-              Math.min(
-                currentPage() * itemsPerPage(),
-                filteredStudents().length
-              )
-            }}
-            of {{ filteredStudents().length }} students
+        <div class="text-center py-5">
+          <div class="spinner-border text-warning" role="status">
+            <span class="visually-hidden">Loading...</span>
           </div>
-          <nav>
-            <ul class="pagination mb-0">
-              <li class="page-item" [class.disabled]="currentPage() === 1">
-                <button class="page-link" (click)="goToPage(currentPage() - 1)">
-                  <i class="bi bi-chevron-left"></i>
-                </button>
-              </li>
-              @for (page of [].constructor(totalPages()); track $index) { @if
-              ($index + 1 === 1 || $index + 1 === totalPages() || ($index + 1 >=
-              currentPage() - 1 && $index + 1 <= currentPage() + 1)) {
-              <li
-                class="page-item"
-                [class.active]="$index + 1 === currentPage()"
-              >
-                <button class="page-link" (click)="goToPage($index + 1)">
-                  {{ $index + 1 }}
-                </button>
-              </li>
-              } @else if ($index + 1 === currentPage() - 2 || $index + 1 ===
-              currentPage() + 2) {
-              <li class="page-item disabled">
-                <span class="page-link">...</span>
-              </li>
-              } }
-              <li
-                class="page-item"
-                [class.disabled]="currentPage() === totalPages()"
-              >
-                <button class="page-link" (click)="goToPage(currentPage() + 1)">
-                  <i class="bi bi-chevron-right"></i>
-                </button>
-              </li>
-            </ul>
-          </nav>
+          <p class="text-muted mt-3">Loading students...</p>
         </div>
-      </div>
-      } }
+      } @else {
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead class="table-light">
+              <tr>
+                <th class="border-0 ps-4">
+                  <i class="bi bi-person me-1"></i>Name
+                </th>
+                <th class="border-0">
+                  <i class="bi bi-geo-alt me-1"></i>Address
+                </th>
+                <th class="border-0">
+                  <i class="bi bi-telephone me-1"></i>Phone
+                </th>
+                <th class="border-0">
+                  <i class="bi bi-calendar-event me-1"></i>Age
+                </th>
+                <th class="border-0">
+                  <i class="bi bi-bookmark-star me-1"></i>Batch
+                </th>
+                <th class="border-0">
+                  <i class="bi bi-calendar-event me-1"></i>Registration Date
+                </th>
+                <th class="border-0 text-end pe-4">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (student of paginatedStudents(); track student.id) {
+                <tr>
+                  <td class="ps-4">
+                    <div class="d-flex align-items-center">
+                      <div
+                        class="bg-warning bg-opacity-10 rounded-circle p-2 me-2"
+                      >
+                        <i class="bi bi-person-fill text-warning"></i>
+                      </div>
+                      <span class="fw-medium">{{ student.name }}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="text-muted">
+                      <i class="bi bi-geo-alt-fill me-1"></i
+                      >{{ student.address }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge bg-light text-dark border">
+                      <i class="bi bi-phone me-1"></i>{{ student.phone }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge bg-info text-dark">
+                      <i class="bi bi-person-badge me-1"></i
+                      >{{ student.age }} yrs
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge bg-warning text-dark">
+                      <i class="bi bi-bookmark-star-fill me-1"></i
+                      >{{ student.batch }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="text-muted">
+                      <i class="bi bi-calendar3 me-1"></i
+                      >{{ student.registrationDate }}
+                    </span>
+                  </td>
+                  <td class="text-end pe-4">
+                    <div class="btn-group" role="group">
+                      <button
+                        class="btn btn-sm btn-outline-primary"
+                        (click)="openEditModal(student)"
+                        title="Edit Student"
+                      >
+                        <i class="bi bi-pencil-square"></i>
+                      </button>
+                      <button
+                        class="btn btn-sm btn-outline-danger"
+                        (click)="student.id && deleteStudent(student.id)"
+                        title="Delete Student"
+                      >
+                        <i class="bi bi-trash-fill"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="6" class="text-center py-5">
+                    <div class="text-muted">
+                      <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                      <h5>No students found</h5>
+                      <p>Add your first student to get started!</p>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        @if (filteredStudents().length > 0) {
+          <div class="card-footer bg-white">
+            <div class="d-flex justify-content-between align-items-center">
+              <div class="text-muted">
+                Showing {{ (currentPage() - 1) * itemsPerPage() + 1 }} to
+                {{
+                  Math.min(
+                    currentPage() * itemsPerPage(),
+                    filteredStudents().length
+                  )
+                }}
+                of {{ filteredStudents().length }} students
+              </div>
+              <nav>
+                <ul class="pagination mb-0">
+                  <li class="page-item" [class.disabled]="currentPage() === 1">
+                    <button
+                      class="page-link"
+                      (click)="goToPage(currentPage() - 1)"
+                    >
+                      <i class="bi bi-chevron-left"></i>
+                    </button>
+                  </li>
+                  @for (page of [].constructor(totalPages()); track $index) {
+                    @if (
+                      $index + 1 === 1 ||
+                      $index + 1 === totalPages() ||
+                      ($index + 1 >= currentPage() - 1 &&
+                        $index + 1 <= currentPage() + 1)
+                    ) {
+                      <li
+                        class="page-item"
+                        [class.active]="$index + 1 === currentPage()"
+                      >
+                        <button
+                          class="page-link"
+                          (click)="goToPage($index + 1)"
+                        >
+                          {{ $index + 1 }}
+                        </button>
+                      </li>
+                    } @else if (
+                      $index + 1 === currentPage() - 2 ||
+                      $index + 1 === currentPage() + 2
+                    ) {
+                      <li class="page-item disabled">
+                        <span class="page-link">...</span>
+                      </li>
+                    }
+                  }
+                  <li
+                    class="page-item"
+                    [class.disabled]="currentPage() === totalPages()"
+                  >
+                    <button
+                      class="page-link"
+                      (click)="goToPage(currentPage() + 1)"
+                    >
+                      <i class="bi bi-chevron-right"></i>
+                    </button>
+                  </li>
+                </ul>
+              </nav>
+            </div>
+          </div>
+        }
+      }
     </div>
   </div>
 
   <!-- Add/Edit Modal -->
   @if (showModal()) {
-  <div
-    class="modal d-block"
-    tabindex="-1"
-    style="background-color: rgba(0, 0, 0, 0.5)"
-  >
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-      <div class="modal-content border-0 shadow">
-        <div class="modal-header bg-warning text-dark">
-          <h5 class="modal-title">
-            <i
-              class="bi bi-{{
-                isEditing() ? 'pencil-square' : 'plus-circle'
-              }} me-2"
-            ></i>
-            {{ isEditing() ? "Edit Student" : "Add New Student" }}
-          </h5>
-          <button
-            type="button"
-            class="btn-close btn-close-white"
-            (click)="closeModal()"
-          ></button>
-        </div>
-        <div class="modal-body p-4">
-          <form #studentForm="ngForm">
-            <div class="row g-3">
-              <div class="col-12">
-                <label class="form-label fw-semibold">
-                  <i class="bi bi-person me-1"></i>Full Name
-                  <span class="text-danger">*</span>
-                </label>
-                <input
-                  type="text"
-                  class="form-control form-control-lg"
-                  [(ngModel)]="currentStudent().name"
-                  (ngModelChange)="updateName($event)"
-                  name="name"
-                  #nameInput="ngModel"
-                  required
-                  minlength="3"
-                  placeholder="Enter student's full name"
-                  [class.is-invalid]="nameInput.invalid && nameInput.touched"
-                  [class.is-valid]="nameInput.valid && nameInput.touched"
-                />
-                @if (nameInput.invalid && nameInput.touched) {
-                <div class="invalid-feedback">
-                  @if (nameInput.errors?.['required']) {
-                  <i class="bi bi-exclamation-circle me-1"></i>Name is required
-                  } @if (nameInput.errors?.['minlength']) {
-                  <i class="bi bi-exclamation-circle me-1"></i>Name must be at
-                  least 3 characters }
-                </div>
-                }
-              </div>
-
-              <div class="col-12">
-                <label class="form-label fw-semibold">
-                  <i class="bi bi-geo-alt me-1"></i>Address
-                  <span class="text-danger">*</span>
-                </label>
-                <textarea
-                  class="form-control form-control-lg"
-                  [(ngModel)]="currentStudent().address"
-                  (ngModelChange)="updateAddress($event)"
-                  name="address"
-                  #addressInput="ngModel"
-                  required
-                  minlength="5"
-                  rows="2"
-                  placeholder="Enter student's full address"
-                  [class.is-invalid]="
-                    addressInput.invalid && addressInput.touched
-                  "
-                  [class.is-valid]="addressInput.valid && addressInput.touched"
-                ></textarea>
-                @if (addressInput.invalid && addressInput.touched) {
-                <div class="invalid-feedback">
-                  @if (addressInput.errors?.['required']) {
-                  <i class="bi bi-exclamation-circle me-1"></i>Address is
-                  required } @if (addressInput.errors?.['minlength']) {
-                  <i class="bi bi-exclamation-circle me-1"></i>Address must be
-                  at least 5 characters }
-                </div>
-                }
-              </div>
-
-              <div class="col-md-6">
-                <label class="form-label fw-semibold">
-                  <i class="bi bi-telephone me-1"></i>Phone Number
-                  <span class="text-danger">*</span>
-                </label>
-                <input
-                  type="tel"
-                  class="form-control form-control-lg"
-                  [(ngModel)]="currentStudent().phone"
-                  (ngModelChange)="updatePhone($event)"
-                  name="phone"
-                  #phoneInput="ngModel"
-                  required
-                  pattern="[0-9]{10,15}"
-                  placeholder="1234567890"
-                  [class.is-invalid]="phoneInput.invalid && phoneInput.touched"
-                  [class.is-valid]="phoneInput.valid && phoneInput.touched"
-                />
-                @if (phoneInput.invalid && phoneInput.touched) {
-                <div class="invalid-feedback">
-                  @if (phoneInput.errors?.['required']) {
-                  <i class="bi bi-exclamation-circle me-1"></i>Phone is required
-                  } @if (phoneInput.errors?.['pattern']) {
-                  <i class="bi bi-exclamation-circle me-1"></i>Enter 10-15
-                  digits }
-                </div>
-                }
-              </div>
-
-              <div class="col-md-6">
-                <label class="form-label fw-semibold">
-                  <i class="bi bi-bookmark-star me-1"></i>Batch
-                  <span class="text-danger">*</span>
-                </label>
-                <select
-                  class="form-select form-select-lg"
-                  [(ngModel)]="currentStudent().batch"
-                  (ngModelChange)="updateBatch($event)"
-                  name="batch"
-                  #batchInput="ngModel"
-                  required
-                  [class.is-invalid]="batchInput.invalid && batchInput.touched"
-                  [class.is-valid]="batchInput.valid && batchInput.touched"
-                >
-                  <option value="">Select a batch...</option>
-                  @for (batch of batches; track batch) {
-                  <option [value]="batch">{{ batch }}</option>
+    <div
+      class="modal d-block"
+      tabindex="-1"
+      style="background-color: rgba(0, 0, 0, 0.5)"
+    >
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow">
+          <div class="modal-header bg-warning text-dark">
+            <h5 class="modal-title">
+              <i
+                class="bi bi-{{
+                  isEditing() ? 'pencil-square' : 'plus-circle'
+                }} me-2"
+              ></i>
+              {{ isEditing() ? "Edit Student" : "Add New Student" }}
+            </h5>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              (click)="closeModal()"
+            ></button>
+          </div>
+          <div class="modal-body p-4">
+            <form #studentForm="ngForm">
+              <div class="row g-3">
+                <div class="col-12">
+                  <label class="form-label fw-semibold">
+                    <i class="bi bi-person me-1"></i>Full Name
+                    <span class="text-danger">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    class="form-control form-control-lg"
+                    [(ngModel)]="currentStudent().name"
+                    (ngModelChange)="updateName($event)"
+                    name="name"
+                    #nameInput="ngModel"
+                    required
+                    minlength="3"
+                    placeholder="Enter student's full name"
+                    [class.is-invalid]="nameInput.invalid && nameInput.touched"
+                    [class.is-valid]="nameInput.valid && nameInput.touched"
+                  />
+                  @if (nameInput.invalid && nameInput.touched) {
+                    <div class="invalid-feedback">
+                      @if (nameInput.errors?.["required"]) {
+                        <i class="bi bi-exclamation-circle me-1"></i>Name is
+                        required
+                      }
+                      @if (nameInput.errors?.["minlength"]) {
+                        <i class="bi bi-exclamation-circle me-1"></i>Name must
+                        be at least 3 characters
+                      }
+                    </div>
                   }
-                </select>
-                @if (batchInput.invalid && batchInput.touched) {
-                <div class="invalid-feedback">
-                  <i class="bi bi-exclamation-circle me-1"></i>Batch is required
                 </div>
-                }
-              </div>
 
-              <div class="col-12">
-                <label class="form-label fw-semibold">
-                  <i class="bi bi-calendar-event me-1"></i>Registration Date
-                  <span class="text-danger">*</span>
-                </label>
-                <input
-                  type="date"
-                  class="form-control form-control-lg"
-                  [(ngModel)]="currentStudent().registrationDate"
-                  (ngModelChange)="updateRegistrationDate($event)"
-                  name="registrationDate"
-                  #dateInput="ngModel"
-                  required
-                  [class.is-invalid]="dateInput.invalid && dateInput.touched"
-                  [class.is-valid]="dateInput.valid && dateInput.touched"
-                />
-                @if (dateInput.invalid && dateInput.touched) {
-                <div class="invalid-feedback">
-                  <i class="bi bi-exclamation-circle me-1"></i>Date is required
+                <div class="col-12">
+                  <label class="form-label fw-semibold">
+                    <i class="bi bi-geo-alt me-1"></i>Address
+                    <span class="text-danger">*</span>
+                  </label>
+                  <textarea
+                    class="form-control form-control-lg"
+                    [(ngModel)]="currentStudent().address"
+                    (ngModelChange)="updateAddress($event)"
+                    name="address"
+                    #addressInput="ngModel"
+                    required
+                    minlength="5"
+                    rows="2"
+                    placeholder="Enter student's full address"
+                    [class.is-invalid]="
+                      addressInput.invalid && addressInput.touched
+                    "
+                    [class.is-valid]="
+                      addressInput.valid && addressInput.touched
+                    "
+                  ></textarea>
+                  @if (addressInput.invalid && addressInput.touched) {
+                    <div class="invalid-feedback">
+                      @if (addressInput.errors?.["required"]) {
+                        <i class="bi bi-exclamation-circle me-1"></i>Address is
+                        required
+                      }
+                      @if (addressInput.errors?.["minlength"]) {
+                        <i class="bi bi-exclamation-circle me-1"></i>Address
+                        must be at least 5 characters
+                      }
+                    </div>
+                  }
                 </div>
-                }
+
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold">
+                    <i class="bi bi-telephone me-1"></i>Phone Number
+                    <span class="text-danger">*</span>
+                  </label>
+                  <input
+                    type="tel"
+                    class="form-control form-control-lg"
+                    [(ngModel)]="currentStudent().phone"
+                    (ngModelChange)="updatePhone($event)"
+                    name="phone"
+                    #phoneInput="ngModel"
+                    required
+                    pattern="[0-9]{10,15}"
+                    placeholder="1234567890"
+                    [class.is-invalid]="
+                      phoneInput.invalid && phoneInput.touched
+                    "
+                    [class.is-valid]="phoneInput.valid && phoneInput.touched"
+                  />
+                  @if (phoneInput.invalid && phoneInput.touched) {
+                    <div class="invalid-feedback">
+                      @if (phoneInput.errors?.["required"]) {
+                        <i class="bi bi-exclamation-circle me-1"></i>Phone is
+                        required
+                      }
+                      @if (phoneInput.errors?.["pattern"]) {
+                        <i class="bi bi-exclamation-circle me-1"></i>Enter 10-15
+                        digits
+                      }
+                    </div>
+                  }
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold">
+                    <i class="bi bi-calendar-event me-1"></i>Age
+                    <span class="text-danger">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    class="form-control form-control-lg"
+                    [(ngModel)]="currentStudent().age"
+                    (ngModelChange)="updateAge($event)"
+                    name="age"
+                    #ageInput="ngModel"
+                    required
+                    min="1"
+                    max="100"
+                    placeholder="Enter age"
+                    [class.is-invalid]="ageInput.invalid && ageInput.touched"
+                    [class.is-valid]="ageInput.valid && ageInput.touched"
+                  />
+                  @if (ageInput.invalid && ageInput.touched) {
+                    <div class="invalid-feedback">
+                      @if (ageInput.errors?.["required"]) {
+                        <i class="bi bi-exclamation-circle me-1"></i>Age is
+                        required
+                      }
+                      @if (
+                        ageInput.errors?.["min"] || ageInput.errors?.["max"]
+                      ) {
+                        <i class="bi bi-exclamation-circle me-1"></i>Age must be
+                        between 1 and 100
+                      }
+                    </div>
+                  }
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold">
+                    <i class="bi bi-bookmark-star me-1"></i>Batch
+                    <span class="text-danger">*</span>
+                  </label>
+                  <select
+                    class="form-select form-select-lg"
+                    [(ngModel)]="currentStudent().batch"
+                    (ngModelChange)="updateBatch($event)"
+                    name="batch"
+                    #batchInput="ngModel"
+                    required
+                    [class.is-invalid]="
+                      batchInput.invalid && batchInput.touched
+                    "
+                    [class.is-valid]="batchInput.valid && batchInput.touched"
+                  >
+                    <option value="">Select a batch...</option>
+                    @for (batch of batches; track batch) {
+                      <option [value]="batch">{{ batch }}</option>
+                    }
+                  </select>
+                  @if (batchInput.invalid && batchInput.touched) {
+                    <div class="invalid-feedback">
+                      <i class="bi bi-exclamation-circle me-1"></i>Batch is
+                      required
+                    </div>
+                  }
+                </div>
+
+                <div class="col-12">
+                  <label class="form-label fw-semibold">
+                    <i class="bi bi-calendar-event me-1"></i>Registration Date
+                    <span class="text-danger">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    class="form-control form-control-lg"
+                    [(ngModel)]="currentStudent().registrationDate"
+                    (ngModelChange)="updateRegistrationDate($event)"
+                    name="registrationDate"
+                    #dateInput="ngModel"
+                    required
+                    [class.is-invalid]="dateInput.invalid && dateInput.touched"
+                    [class.is-valid]="dateInput.valid && dateInput.touched"
+                  />
+                  @if (dateInput.invalid && dateInput.touched) {
+                    <div class="invalid-feedback">
+                      <i class="bi bi-exclamation-circle me-1"></i>Date is
+                      required
+                    </div>
+                  }
+                </div>
               </div>
-            </div>
-          </form>
-        </div>
-        <div class="modal-footer bg-light">
-          <button
-            type="button"
-            class="btn btn-secondary"
-            (click)="closeModal()"
-          >
-            <i class="bi bi-x-circle me-1"></i>Cancel
-          </button>
-          <button
-            type="button"
-            class="btn btn-warning text-dark"
-            (click)="saveStudent()"
-            [disabled]="studentForm.invalid || isSaving()"
-          >
-            @if (isSaving()) {
-            <span
-              class="spinner-border spinner-border-sm me-1"
-              role="status"
-              aria-hidden="true"
-            ></span>
-            Saving... } @else {
-            <i
-              class="bi bi-{{
-                isEditing() ? 'check-circle' : 'plus-circle'
-              }} me-1"
-            ></i>
-            {{ isEditing() ? "Update" : "Add" }} Student }
-          </button>
+            </form>
+          </div>
+          <div class="modal-footer bg-light">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              (click)="closeModal()"
+            >
+              <i class="bi bi-x-circle me-1"></i>Cancel
+            </button>
+            <button
+              type="button"
+              class="btn btn-warning text-dark"
+              (click)="saveStudent()"
+              [disabled]="studentForm.invalid || isSaving()"
+            >
+              @if (isSaving()) {
+                <span
+                  class="spinner-border spinner-border-sm me-1"
+                  role="status"
+                  aria-hidden="true"
+                ></span>
+                Saving...
+              } @else {
+                <i
+                  class="bi bi-{{
+                    isEditing() ? 'check-circle' : 'plus-circle'
+                  }} me-1"
+                ></i>
+                {{ isEditing() ? "Update" : "Add" }} Student
+              }
+            </button>
+          </div>
         </div>
       </div>
     </div>
-  </div>
   }
 
   <!-- Back Button -->

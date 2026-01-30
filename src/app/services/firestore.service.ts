@@ -20,6 +20,7 @@ export interface Student {
   name: string;
   address: string;
   phone: string;
+  age: number;
   batch: string;
   registrationDate: string;
 }
@@ -82,7 +83,7 @@ export class FirestoreService {
         },
         (error) => {
           observer.error(error);
-        }
+        },
       );
       return () => unsubscribe();
     });
@@ -120,7 +121,7 @@ export class FirestoreService {
 
   async updateAttendanceRecord(
     id: string,
-    record: Partial<AttendanceRecord>
+    record: Partial<AttendanceRecord>,
   ): Promise<void> {
     const recordDoc = doc(this.firestore, 'attendance', id);
     await updateDoc(recordDoc, record as DocumentData);

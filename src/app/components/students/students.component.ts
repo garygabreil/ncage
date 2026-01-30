@@ -32,7 +32,7 @@ export class StudentsComponent implements OnInit {
         s.name.toLowerCase().includes(search) ||
         s.address.toLowerCase().includes(search) ||
         s.phone.includes(search) ||
-        s.batch.toLowerCase().includes(search)
+        s.batch.toLowerCase().includes(search),
     );
   });
 
@@ -43,28 +43,27 @@ export class StudentsComponent implements OnInit {
   });
 
   totalPages = computed(() =>
-    Math.ceil(this.filteredStudents().length / this.itemsPerPage())
+    Math.ceil(this.filteredStudents().length / this.itemsPerPage()),
   );
 
   currentStudent = signal<Partial<Student>>({
     name: '',
     address: '',
     phone: '',
-    batch: 'batch-1',
+    age: 0,
+    batch: 'Dev 4to5pm below 6 yrs',
     registrationDate: new Date().toISOString().split('T')[0],
   });
 
   batches = [
-    'Batch-1',
-    'Batch-2',
-    'Batch-3',
-    'Batch-4',
-    'Batch-5',
-    'Batch-6',
-    'Batch-7',
-    'Batch-8',
-    'Batch-9',
-    'Batch-10',
+    'Dev 4to5pm below 6 yrs',
+    'Dev 5to6pm below 8 yrs',
+    'Dev 6to7pm below 10 yrs',
+    'Dev 7to8pm Above 12 yrs',
+    'Beginner 4to5pm below 6 yrs',
+    'Beginner 5to6pm below 8 yrs',
+    'Beginner 6to7pm below 10 yrs',
+    'Beginner 7to8pm Above 12 yrs',
   ];
 
   isEditing = signal(false);
@@ -81,6 +80,10 @@ export class StudentsComponent implements OnInit {
 
   updatePhone(value: string) {
     this.currentStudent.set({ ...this.currentStudent(), phone: value });
+  }
+
+  updateAge(value: number) {
+    this.currentStudent.set({ ...this.currentStudent(), age: value });
   }
 
   updateBatch(value: string) {
@@ -109,7 +112,8 @@ export class StudentsComponent implements OnInit {
       name: '',
       address: '',
       phone: '',
-      batch: 'batch-1',
+      age: 0,
+      batch: 'Dev 4to5pm below 6 yrs',
       registrationDate: new Date().toISOString().split('T')[0],
     });
     this.showModal.set(true);
